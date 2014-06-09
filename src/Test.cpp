@@ -21,7 +21,7 @@ typedef struct {
 } StereoData;
 
 #define WINDOW_START   0
-#define WINDOW_SIZE    70
+#define WINDOW_SIZE    78
 #define MATCH_SIZE     3
 #define ERROR_LEVEL    1
 
@@ -95,10 +95,6 @@ void calcDepthMapMy2(StereoData &params) {
 		for (x = 0; x < params.stereo->cols; x++) {
 			closest = 999; minErrorValue = 999;matched=0;
 			for (int i = 0; i < WINDOW_SIZE; i++) {
-				if (getPixelValue(params.visited, x + i, y)) {
-					continue;
-				}
-
 				tmp = match(params, x, y, i);
 				tmpSmoothed = tmp;
 
@@ -116,13 +112,12 @@ void calcDepthMapMy2(StereoData &params) {
 
 			if (matched) {
 				cursor = closest;
-				putPixel(params.visited, x + cursor, y, 50);
 				putPixel(params.stereo, x, y, cursor);
 			}
 
 
-
-			/*closest = 999;minErrorValue = 999;
+/*
+			closest = 999;minErrorValue = 999;
 
 			for (int i = WINDOW_START; i < WINDOW_SIZE; i++) {
 				tmp = rmatch(params, params.stereo->cols - x, y, i) ;
@@ -141,8 +136,8 @@ void calcDepthMapMy2(StereoData &params) {
 			if (closest != 999) {
 				if (cursor2 != closest) {
 					cursor2 = closest;
-					putPixel(params, params.stereo->cols - x, y, cursor2);
 				}
+				putPixel(params.stereo, params.stereo->cols - x - cursor2, y, cursor2);
 			}*/
 		}
 	}
@@ -151,8 +146,8 @@ void calcDepthMapMy2(StereoData &params) {
 int main(int argc, char** argv) {
 	StereoData params;
 
-	Mat left = imread("left6.png", 1);
-	Mat right = imread("right6.png", 1);
+	Mat left = imread("left2.png", 1);
+	Mat right = imread("right2.png", 1);
 
 	cvtColor(left, left, CV_BGR2GRAY);
 	cvtColor(right, right, CV_BGR2GRAY);
