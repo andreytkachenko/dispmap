@@ -17,15 +17,16 @@ typedef struct {
 	Mat* left;
 	Mat* right;
 	Mat* stereo;
+	Mat* temp;
 } StereoData;
 
 #define WINDOW_START   0
-#define WINDOW_SIZE    80
+#define WINDOW_SIZE    60
 #define MATCH_SIZE_X   2
 #define MATCH_SIZE_Y   2
-#define ERROR_LEVEL    1
+#define ERROR_LEVEL    0
 #define Y_CORRECTION   0
-#define COLOR_SCALE    1
+#define COLOR_SCALE    0
 
 int getPixelValue(Mat* data, int x, int y, int offset = -1)
 {
@@ -39,11 +40,17 @@ int getPixelValue(Mat* data, int x, int y, int offset = -1)
 	if (offset == -1 || offset > 2) {
 		value = 0.299 * pixel[0] + 0.587 * pixel[1] + 0.114 * pixel[2];
 	} else {
+		if (offset == 0 || offset == 2) {
+			value = pixel[offset] & 0x1F;
+		} else {
+			value = pixel[offset] & 0x3F;
+		}
 		value = pixel[offset];
 	}
 
 	return  value;
 }
+
 
 void normalize(Mat* mat, int x_from, int x_to, int y)
 {
@@ -88,9 +95,9 @@ int match(StereoData &params, int x, int y, int j) {
 			Gvalue = abs(getPixelValue(params.left, x + i, y + g, 1) - getPixelValue(params.right, x + j + i, y + g, 1));
 			Bvalue = abs(getPixelValue(params.left, x + i, y + g, 2) - getPixelValue(params.right, x + j + i, y + g, 2));
 
-			error += Rvalue * COLOR_SCALE;
-			error += Gvalue * COLOR_SCALE;
-			error += Bvalue * COLOR_SCALE;
+			error += Rvalue << COLOR_SCALE;
+			error += Gvalue << COLOR_SCALE;
+			error += Bvalue << COLOR_SCALE;
 		}
 	}
 
@@ -125,14 +132,19 @@ int getPixelColor(int cursor)
 	return (val * val) * 255.0;
 }
 
-void putPixel(Mat* mat, int x, int y, int cursor)
+void putPixelValue(Mat* mat, int x, int y, int value)
 {
 	uchar* data;
 
 	if (x >= 0 && x < mat->cols && y >= 0 && y < mat->rows) {
 		data = mat->ptr(y, x);
-		data[0] = getPixelColor(cursor);
+		data[0] = value;
 	}
+}
+
+void putPixel(Mat* mat, int x, int y, int cursor)
+{
+	putPixelValue(mat, x, y, getPixelColor(cursor));
 }
 
 void calcDepthMapMy2(StereoData &params) {
@@ -150,7 +162,7 @@ void calcDepthMapMy2(StereoData &params) {
 
 			for (int i = WINDOW_START; i < WINDOW_SIZE; i++) {
 				tmp = match(params, x, y, i);
-				tmpSmoothed  = tmp + (0 * abs(cursor - i));
+				tmpSmoothed  = (tmp >> ERROR_LEVEL) + ((abs(cursor - i)) >> 12);
 				if (tmpSmoothed < minErrorValue) {
 					minErrorValue = tmpSmoothed;
 					closest = i;
@@ -165,17 +177,14 @@ void calcDepthMapMy2(StereoData &params) {
 
 			if (matched) {
 				cursor = closest;
+				putPixel(params.stereo, x + cursor, y, cursor);
 
-				/*if (cursor-precursor > 0 && cursor-precursor < 10) {
+				if (cursor-precursor > 0 && cursor-precursor < 10) {
 					for (int i = precursor; i < cursor; i++) {
-						putPixel(params.stereo, x + i, y, 0);
+						//putPixel(params.stereo, x + i, y, 0);
 					}
-				}*/
+				}
 			}
-
-			//if (cursor - precursor != 0) {
-			putPixel(params.stereo, x + cursor, y, cursor);
-			//}
 
 			preprecursor = precursor;
 			precursor = cursor;
@@ -219,22 +228,67 @@ void calcDepthMapMy2(StereoData &params) {
 	}
 }
 
+void smooth(StereoData &params)
+{
+	int t = 2;
+	int i,j, x,y,val,tmp,diff = 0;
+	int count = 0, e=0;
+
+	for (y = 0; y < params.stereo->rows; y++) {
+		for (x = 0; x < params.stereo->cols; x++) {
+			count=0; diff=0, e=0;
+			val = getPixelValue(params.stereo, x, y, 0);
+
+			for (i=-t; i <= t; i++) {
+				for (j=-t; j <= t; j++) {
+					if (y >= params.stereo->rows || y < 0 || x >= params.stereo->cols || x < 0) {
+						continue;
+					}
+
+					if (i==0 && j==0) {
+						continue;
+					}
+
+					uchar* pixel = params.stereo->ptr(y+i, x+j);
+
+
+					tmp = pixel[0];
+					if (tmp) {
+						diff += abs(val - tmp);
+						count++;
+					} else {
+						e++;
+					}
+				}
+			}
+
+			if (diff <= 400 && e < 24) {
+				putPixelValue(params.temp, x, y, val);
+			}
+		}
+	}
+}
+
+
 int main(int argc, char** argv) {
 	StereoData params;
 
-	Mat left = imread("left8.png", 1);
-	Mat right = imread("right8.png", 1);
+	Mat left = imread("left6.png", 1);
+	Mat right = imread("right6.png", 1);
 
 	Mat stereo(Mat::zeros(left.rows, left.cols, CV_8U));
+	Mat temp(Mat::zeros(left.rows, left.cols, CV_8U));
 
 	params.left = &left;
 	params.right = &right;
 	params.stereo = &stereo;
+	params.temp = &temp;
 
 	//calcDepthMapDynProgr(params);
 	calcDepthMapMy2(params);
+	smooth(params);
 
-	imshow("Display Image Dyn Progr", stereo);
+	imshow("Display Image Dyn Progr", temp);
 	waitKey();
 
 	return 0;
