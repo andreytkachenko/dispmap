@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <opencv2/opencv.hpp>
+#include <algorithm>
 
 using namespace std;
 using namespace cv;
@@ -18,15 +19,16 @@ typedef struct {
 	Mat* right;
 	Mat* stereo;
 	Mat* temp;
+	std::vector<int> match;
 } StereoData;
 
 #define WINDOW_START   0
-#define WINDOW_SIZE    60
-#define MATCH_SIZE_X   2
-#define MATCH_SIZE_Y   2
+#define WINDOW_SIZE    80
+#define MATCH_SIZE_X   3
+#define MATCH_SIZE_Y   3
 #define ERROR_LEVEL    0
 #define Y_CORRECTION   0
-#define COLOR_SCALE    0
+#define COLOR_SCALE    4
 
 int getPixelValue(Mat* data, int x, int y, int offset = -1)
 {
@@ -78,15 +80,16 @@ void normalize(Mat* mat, int x_from, int x_to, int y)
 }
 
 int match(StereoData &params, int x, int y, int j) {
-	int error = 0;
+	int error = 0, val;
 	int Rvalue, Gvalue, Bvalue;
-
-	for (int i = 0; i < MATCH_SIZE_X; i++) {
+	params.match.clear();
+	for (int i = -(MATCH_SIZE_X / 2); i < MATCH_SIZE_X / 2; i++) {
 		if (x + j + i >= params.right->cols) {
 			return 999;
 		}
 
-		for (int g = 0; g < MATCH_SIZE_Y; g++) {
+		for (int g = -(MATCH_SIZE_Y / 2); g < MATCH_SIZE_Y / 2; g++) {
+			val = 0;
 			if (y + g >= params.right->rows) {
 				return 999;
 			}
@@ -95,11 +98,16 @@ int match(StereoData &params, int x, int y, int j) {
 			Gvalue = abs(getPixelValue(params.left, x + i, y + g, 1) - getPixelValue(params.right, x + j + i, y + g, 1));
 			Bvalue = abs(getPixelValue(params.left, x + i, y + g, 2) - getPixelValue(params.right, x + j + i, y + g, 2));
 
-			error += Rvalue << COLOR_SCALE;
-			error += Gvalue << COLOR_SCALE;
-			error += Bvalue << COLOR_SCALE;
+			val += Rvalue << COLOR_SCALE;
+			val += Gvalue << COLOR_SCALE;
+			val += Bvalue << COLOR_SCALE;
+
+			params.match.push_back(g * MATCH_SIZE_X + i);
+			error += val;
 		}
 	}
+
+	std::sort(params.match.begin(), params.match.end());
 
 	return error;
 }
@@ -148,21 +156,21 @@ void putPixel(Mat* mat, int x, int y, int cursor)
 }
 
 void calcDepthMapMy2(StereoData &params) {
-	int x, y, cursor, closest, tmp;
+	int x, y, cursor, closest, tmp, minLevel=0;
 	int minErrorValue, tmpSmoothed, matched;
 	int precursor, preprecursor;
 
 	for (y = 0; y < params.stereo->rows; y++) {
-		cursor       = WINDOW_SIZE/2;
-		precursor    = WINDOW_SIZE/2;
-		preprecursor = WINDOW_SIZE/2;
+		cursor       = 0;
+		precursor    = 0;
+		preprecursor = 0;
 		for (x = 0; x < params.stereo->cols; x++) {
 			closest = 999; minErrorValue = 999;matched=0;
 			minErrorValue=999;
 
 			for (int i = WINDOW_START; i < WINDOW_SIZE; i++) {
 				tmp = match(params, x, y, i);
-				tmpSmoothed  = (tmp >> ERROR_LEVEL) + ((abs(cursor - i)) >> 12);
+				tmpSmoothed  = (tmp) + ((abs(cursor - i)) >> 4);
 				if (tmpSmoothed < minErrorValue) {
 					minErrorValue = tmpSmoothed;
 					closest = i;
@@ -175,15 +183,38 @@ void calcDepthMapMy2(StereoData &params) {
 				}
 			}
 
-			if (matched) {
-				cursor = closest;
-				putPixel(params.stereo, x + cursor, y, cursor);
 
-				if (cursor-precursor > 0 && cursor-precursor < 10) {
-					for (int i = precursor; i < cursor; i++) {
-						//putPixel(params.stereo, x + i, y, 0);
-					}
+			if (closest-cursor > 0 && closest-cursor < 5) {
+				for (int i = cursor; i < closest; i++) {
+					putPixel(params.stereo, x + i, y, 0);
 				}
+			}
+
+
+			if (matched == 1) {
+				//if (cursor != closest) {
+				if (params.match.size() > 2)  {
+					int a = params.match.at(0);
+					int dx = a % MATCH_SIZE_X;
+					int dy = a / MATCH_SIZE_X;
+
+					putPixel(params.stereo, (x + closest) + dx, y + dy, closest);
+
+					a = params.match.at(1);
+					dx = a % MATCH_SIZE_X;
+					dy = a / MATCH_SIZE_X;
+
+					putPixel(params.stereo, (x + closest) + dx, y + dy, closest);
+
+					a = params.match.at(2);
+					dx = a % MATCH_SIZE_X;
+					dy = a / MATCH_SIZE_X;
+
+					putPixel(params.stereo, (x + closest) + dx, y + dy, closest);
+				}
+
+				//putPixel(params.stereo, (x + closest), y, closest);
+				cursor = closest;
 			}
 
 			preprecursor = precursor;
@@ -217,7 +248,13 @@ void calcDepthMapMy2(StereoData &params) {
 
 			//if (abs(cursor - precursor)) {
 				//if (abs(getPixelColor(cursor) - getPixelValue(params.stereo, x, y)) < 50) {
-					putPixel(params.stereo, x, y, cursor);
+					//if (getPixelValue(params.stereo, x, y) == getPixelColor(cursor)) {
+						putPixel(params.temp, x, y, cursor);
+					//} else {
+
+						//putPixel(params.stereo, x, y, 0);
+					//}
+
 				//} else {
 				///	putPixel(params.stereo, x, y, 0);
 				//}
@@ -232,38 +269,43 @@ void smooth(StereoData &params)
 {
 	int t = 2;
 	int i,j, x,y,val,tmp,diff = 0;
-	int count = 0, e=0;
+	int count = 0, e=0, preval;
 
 	for (y = 0; y < params.stereo->rows; y++) {
 		for (x = 0; x < params.stereo->cols; x++) {
 			count=0; diff=0, e=0;
 			val = getPixelValue(params.stereo, x, y, 0);
+			if (val) {
+				for (i=-t; i <= t; i++) {
+					for (j=-t; j <= t; j++) {
+						if (y >= params.stereo->rows || y < 0 || x >= params.stereo->cols || x < 0) {
+							continue;
+						}
 
-			for (i=-t; i <= t; i++) {
-				for (j=-t; j <= t; j++) {
-					if (y >= params.stereo->rows || y < 0 || x >= params.stereo->cols || x < 0) {
-						continue;
-					}
+						if (i==0 && j==0) {
+							continue;
+						}
 
-					if (i==0 && j==0) {
-						continue;
-					}
-
-					uchar* pixel = params.stereo->ptr(y+i, x+j);
+						uchar* pixel = params.stereo->ptr(y+i, x+j);
 
 
-					tmp = pixel[0];
-					if (tmp) {
-						diff += abs(val - tmp);
-						count++;
-					} else {
-						e++;
+						tmp = pixel[0];
+						if (tmp) {
+							diff += abs(val-tmp);
+							e += tmp;
+							count++;
+						} else {
+
+						}
 					}
 				}
-			}
 
-			if (diff <= 400 && e < 24) {
-				putPixelValue(params.temp, x, y, val);
+
+				/*if (count && diff < 300) {
+					putPixelValue(params.temp, x, y, val);
+				} else */if (count) {
+					putPixelValue(params.temp, x, y, e/count);
+				}
 			}
 		}
 	}
@@ -273,8 +315,8 @@ void smooth(StereoData &params)
 int main(int argc, char** argv) {
 	StereoData params;
 
-	Mat left = imread("left6.png", 1);
-	Mat right = imread("right6.png", 1);
+	Mat left = imread("left4_.png", 1);
+	Mat right = imread("right4_.png", 1);
 
 	Mat stereo(Mat::zeros(left.rows, left.cols, CV_8U));
 	Mat temp(Mat::zeros(left.rows, left.cols, CV_8U));
@@ -286,9 +328,11 @@ int main(int argc, char** argv) {
 
 	//calcDepthMapDynProgr(params);
 	calcDepthMapMy2(params);
-	smooth(params);
+	//smooth(params);
 
-	imshow("Display Image Dyn Progr", temp);
+	imshow("Display Image Stereo", stereo);
+	//imshow("Display Image Smoothed", temp);
+
 	waitKey();
 
 	return 0;
