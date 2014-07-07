@@ -7,6 +7,11 @@
 
 #include "SvProcessorV1.h"
 
+SvProcessorV1::SvProcessorV1() {
+	left  = NULL;
+	right = NULL;
+}
+
 SvProcessorV1::SvProcessorV1(SvImage& left, SvImage& right) {
 	this->left  = &left;
 	this->right = &right;
@@ -21,7 +26,7 @@ int SvProcessorV1::match(int x, int y, int j) {
 	int error = 0;
 
 	for (int i = 0; i <= 2; i++) {
-		for (int g = 0; g <= 3; g++) {
+		for (int g = 0; g <= 2; g++) {
 			error += diff(x + i, y + g, x + i + j, y + g);
 		}
 	}
@@ -37,7 +42,7 @@ int SvProcessorV1::diff(int lx, int ly, int rx, int ry) {
 	Bvalue = abs(this->left->getPixel(lx, ly, 2) - this->right->getPixel(rx, ry, 2));
 
 	return (Gvalue + Rvalue + Bvalue) +
-		   ((abs(Gvalue - Rvalue) + abs(Bvalue - Gvalue)) * 4);
+		   ((abs(Gvalue - Rvalue) + abs(Bvalue - Gvalue)) * 2);
 }
 
 int SvProcessorV1::match(int x, int y, int j) {
@@ -57,57 +62,64 @@ int SvProcessorV1::match(int x, int y, int j) {
 
 	error += l > r ? r : l;
 	error += t > b ? b : t;
-	//error += l + r+b+t;
+	//error += (l + r + b + t)/4;
 
 	return error;
 }
 
-void SvProcessorV1::run(SvImage& stereo, ImageType base = LEFT) {
+int SvProcessorV1::calc(SvProcessorV1* proc) {
 	int x, y, cursor, closest, tmp;
 	int minErrorValue, tmpSmoothed, matched;
 	int precursor, preprecursor;
+	int dist;
 
-	for (y = 0; y < stereo.getHeight(); y++) {
-		cursor       = 0;
-		precursor    = 0;
-		preprecursor = 0;
-		for (x = 0; x < stereo.getWidth(); x++) {
-			closest = -1; minErrorValue = -1;matched=0;
-			minErrorValue=-1;
+	cursor       = 0;
+	precursor    = 0;
+	preprecursor = 0;
 
-			for (int i = 1; i < this->windowSize; i++) {
-				tmp = this->match(x, y, i);
-				tmpSmoothed  = (tmp) + (abs(cursor - i) * 5);
-				/*if (tmpSmoothed > 150 ) {
-					continue;
-				}*/
+	for (x = 0; x < proc->m_stereo->getWidth(); x++) {
+		closest = -1; minErrorValue = -1;matched=0;
+		minErrorValue=-1;
 
-				if (tmpSmoothed < minErrorValue || minErrorValue == -1) {
-					minErrorValue = tmpSmoothed;
+		for (int i = 1; i < proc->windowSize; i++) {
+			dist = (abs(cursor - i));
+
+			tmp = match(x, proc->m_line, i);
+			tmpSmoothed  = (tmp) + ((dist * dist * dist) >> 10 );
+
+			if (tmpSmoothed < minErrorValue || minErrorValue == -1) {
+				minErrorValue = tmpSmoothed;
+				closest = i;
+				matched = 1;
+			} else if (tmpSmoothed == minErrorValue) {
+				if (abs(cursor - i) < abs(cursor - closest)) {
 					closest = i;
-					matched = 1;
-				} else if (tmpSmoothed == minErrorValue) {
-					if (abs(cursor - i) < abs(cursor - closest)) {
-						closest = i;
-						matched++;
-					}
+					matched++;
 				}
 			}
-
-			if (matched == 1) {
-				cursor = closest;
-			}
-
-			//stereo.putPixel(x, y, minErrorValue/20);
-
-			if (cursor != precursor) {
-				stereo.putPixel(x, y, this->getPixelColor(cursor));
-			}
-
-			preprecursor = precursor;
-			precursor = cursor;
 		}
+
+		if (matched == 1) {
+			cursor = closest;
+		}
+
+		//if (cursor != precursor) {
+		proc->m_stereo->putPixel(x/* + cursor*/, proc->m_line, this->getPixelColor(cursor));
+		//}
+
+		preprecursor = precursor;
+		precursor = cursor;
 	}
+	proc->m_thread.detach();
+
+	return 0;
+}
+
+int SvProcessorV1::run(SvImage& stereo, int line, ImageType base = LEFT) {
+	m_stereo = &stereo;
+	m_line   = line;
+	m_thread = std::thread(&SvProcessorV1::calc, this, this);
+	return 0;
 }
 
 SvProcessorV1::~SvProcessorV1() {
