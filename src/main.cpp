@@ -13,8 +13,8 @@
 using namespace cv;
 
 int main(int argc, char** argv) {
-	Mat matLeft = imread("left8.png", 1);
-	Mat matRight = imread("right8.png", 1);
+	Mat matLeft = imread("img/left11.png", 1);
+	Mat matRight = imread("img/right11.png", 1);
 	Mat matStereo(Mat::zeros(matLeft.rows, matLeft.cols, CV_8U));
 
 	SvImage left(matLeft);
