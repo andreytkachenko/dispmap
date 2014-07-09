@@ -7,47 +7,41 @@
 
 #include "SvProcessorV1.h"
 
-SvProcessorV1::SvProcessorV1() {
-	left  = NULL;
-	right = NULL;
-}
-
-SvProcessorV1::SvProcessorV1(SvImage& left, SvImage& right) {
-	this->left  = &left;
-	this->right = &right;
-}
-
 int SvProcessorV1::getPixelColor(int cursor) {
-	float val = ((1.0 + cursor) / this->windowSize);
-	return (val * val) * 255.0;
+	if (cursor == 0) {
+		return 0;
+	}
+
+	return ((10 * m_left->getWidth()) / (2.0 * 0.9 * cursor ));
 }
 /*
 int SvProcessorV1::match(int x, int y, int j) {
 	int error = 0;
 
-	for (int i = 0; i <= 2; i++) {
+	for (int i = 0; i <= 1; i++) {
 		for (int g = 0; g <= 2; g++) {
 			error += diff(x + i, y + g, x + i + j, y + g);
 		}
 	}
 
 	return error;
-}
-*/
-int SvProcessorV1::diff(int lx, int ly, int rx, int ry) {
-	int Rvalue, Gvalue, Bvalue;
+}*/
 
-	Rvalue = abs(this->left->getPixel(lx, ly, 0) - this->right->getPixel(rx, ry, 0));
-	Gvalue = abs(this->left->getPixel(lx, ly, 1) - this->right->getPixel(rx, ry, 1));
-	Bvalue = abs(this->left->getPixel(lx, ly, 2) - this->right->getPixel(rx, ry, 2));
+int SvProcessorV1::diff(int lx, int ly, int rx, int ry) {
+	int Rvalue, Gvalue, Bvalue, color;
+
+	Rvalue = abs(m_left->getPixel(lx, ly, 0) - m_right->getPixel(rx, ry, 0));
+	Gvalue = abs(m_left->getPixel(lx, ly, 1) - m_right->getPixel(rx, ry, 1));
+	Bvalue = abs(m_left->getPixel(lx, ly, 2) - m_right->getPixel(rx, ry, 2));
+	color  = abs(Gvalue - Rvalue) + abs(Bvalue - Gvalue);
 
 	return (Gvalue + Rvalue + Bvalue) +
-		   ((abs(Gvalue - Rvalue) + abs(Bvalue - Gvalue)) * 2);
+			color * 4;
 }
 
 int SvProcessorV1::match(int x, int y, int j) {
 	int error = 0;
-	int ms = 3;
+	int ms = 4;
 	int c = diff(x, y, x + j, y),
 	    l = 0, r = 0, t = 0, b = 0;
 
@@ -62,30 +56,33 @@ int SvProcessorV1::match(int x, int y, int j) {
 
 	error += l > r ? r : l;
 	error += t > b ? b : t;
-	//error += (l + r + b + t)/4;
+	//error += l + r + b + t;
 
 	return error;
 }
 
-int SvProcessorV1::calc(SvProcessorV1* proc) {
+void SvProcessorV1::exec() {
 	int x, y, cursor, closest, tmp;
 	int minErrorValue, tmpSmoothed, matched;
 	int precursor, preprecursor;
-	int dist;
+	int dist, diff, val, prev, preprev;
 
 	cursor       = 0;
 	precursor    = 0;
 	preprecursor = 0;
 
-	for (x = 0; x < proc->m_stereo->getWidth(); x++) {
+	for (x = 0; x < m_stereo->getWidth(); x++) {
 		closest = -1; minErrorValue = -1;matched=0;
 		minErrorValue=-1;
 
-		for (int i = 1; i < proc->windowSize; i++) {
+		val = m_left->getPixelHue(x, m_line);
+
+		for (int i = 1; i < windowSize; i++) {
 			dist = (abs(cursor - i));
 
-			tmp = match(x, proc->m_line, i);
-			tmpSmoothed  = (tmp) + ((dist * dist * dist) >> 10 );
+			tmp = match(x, m_line, i);
+
+			tmpSmoothed  = tmp;// + (dist) * (1.0/diff);
 
 			if (tmpSmoothed < minErrorValue || minErrorValue == -1) {
 				minErrorValue = tmpSmoothed;
@@ -103,26 +100,13 @@ int SvProcessorV1::calc(SvProcessorV1* proc) {
 			cursor = closest;
 		}
 
-		//if (cursor != precursor) {
-		proc->m_stereo->putPixel(x/* + cursor*/, proc->m_line, this->getPixelColor(cursor));
-		//}
+		m_stereo->putPixel(x, m_line, getPixelColor(cursor));
 
 		preprecursor = precursor;
 		precursor = cursor;
+
+		preprev = prev;
+		prev    = val;
 	}
-	proc->m_thread.detach();
-
-	return 0;
-}
-
-int SvProcessorV1::run(SvImage& stereo, int line, ImageType base = LEFT) {
-	m_stereo = &stereo;
-	m_line   = line;
-	m_thread = std::thread(&SvProcessorV1::calc, this, this);
-	return 0;
-}
-
-SvProcessorV1::~SvProcessorV1() {
-
 }
 

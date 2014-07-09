@@ -19,6 +19,8 @@ protected:
 
 public:
 	int  getPixel(int x, int y, int channel);
+	int  getPixelHue(int x, int y);
+	int  getPixelValue(int x, int y);
 	void putPixel(int x, int y, int val);
 
 	int  getHeight();

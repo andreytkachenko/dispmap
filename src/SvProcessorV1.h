@@ -11,41 +11,21 @@
 #include <iostream>
 #include <thread>
 #include "SvImage.h"
+#include "SvMultithreadProcessor.h"
 
 using namespace std;
 
-class SvProcessorV1 {
+class SvProcessorV1 : public SvMultithreadProcessor {
 
 protected:
-	SvImage*     left;
-	SvImage*     right;
-
-	std::thread  m_thread;
-	SvImage*     m_stereo;
-	int          m_line;
-
-	const int windowSize = 90;
+	const int    windowSize = 90;
 
 public:
-	enum ImageType {
-		LEFT, RIGHT
-	};
-
-	void setLeftImage(SvImage& image) { left = &image;}
-	void setRightImage(SvImage& image) { right = &image;}
-	bool isActive() { return m_thread.joinable(); }
-
 	int diff(int lx, int ly, int rx, int ry);
 	int match(int x, int y, int i);
-	int run(SvImage& stereo, int line, ImageType base);
-	int calc(SvProcessorV1* proc);
+	void exec();
 
 	int getPixelColor(int cursor);
-
-	SvProcessorV1(SvImage& left, SvImage& right);
-	SvProcessorV1();
-
-	virtual ~SvProcessorV1();
 };
 
 #endif /* SVPROCESSORV1_H_ */

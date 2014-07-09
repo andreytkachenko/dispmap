@@ -24,6 +24,24 @@ int SvImage::getPixel(int x, int y, int channel = -1) {
 	return  value;
 }
 
+int SvImage::getPixelHue(int x, int y) {
+	uchar* pixel = this->image->ptr(y, x);
+	if (x >= 0 && x < this->image->cols && y >= 0 && y < this->image->rows) {
+		return abs(pixel[1] - pixel[0]) + abs(pixel[2] - pixel[1]);
+	}
+
+	return 0;
+}
+
+int SvImage::getPixelValue(int x, int y) {
+	uchar* pixel = this->image->ptr(y, x);
+	if (x >= 0 && x < this->image->cols && y >= 0 && y < this->image->rows) {
+		return (pixel[0] + pixel[1] + pixel[2])/3;
+	}
+
+	return 0;
+}
+
 void SvImage::putPixel(int x, int y, int value)
 {
 	uchar* data;
