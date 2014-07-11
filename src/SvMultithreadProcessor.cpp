@@ -36,6 +36,8 @@ void SvMultithreadProcessor::exec() {
 }
 
 SvMultithreadProcessor::~SvMultithreadProcessor() {
-
+	if (m_thread.joinable()) {
+		m_thread.detach();
+	}
 }
 

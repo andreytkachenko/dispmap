@@ -62,51 +62,6 @@ int SvProcessorV1::match(int x, int y, int j) {
 }
 
 void SvProcessorV1::exec() {
-	int x, y, cursor, closest, tmp;
-	int minErrorValue, tmpSmoothed, matched;
-	int precursor, preprecursor;
-	int dist, diff, val, prev, preprev;
 
-	cursor       = 0;
-	precursor    = 0;
-	preprecursor = 0;
-
-	for (x = 0; x < m_stereo->getWidth(); x++) {
-		closest = -1; minErrorValue = -1;matched=0;
-		minErrorValue=-1;
-
-		val = m_left->getPixelHue(x, m_line);
-
-		for (int i = 1; i < windowSize; i++) {
-			dist = (abs(cursor - i));
-
-			tmp = match(x, m_line, i);
-
-			tmpSmoothed  = tmp;// + (dist) * (1.0/diff);
-
-			if (tmpSmoothed < minErrorValue || minErrorValue == -1) {
-				minErrorValue = tmpSmoothed;
-				closest = i;
-				matched = 1;
-			} else if (tmpSmoothed == minErrorValue) {
-				if (abs(cursor - i) < abs(cursor - closest)) {
-					closest = i;
-					matched++;
-				}
-			}
-		}
-
-		if (matched == 1) {
-			cursor = closest;
-		}
-
-		m_stereo->putPixel(x, m_line, getPixelColor(cursor));
-
-		preprecursor = precursor;
-		precursor = cursor;
-
-		preprev = prev;
-		prev    = val;
-	}
 }
 

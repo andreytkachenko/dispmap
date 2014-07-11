@@ -10,7 +10,11 @@
 #include "SvImage.h"
 #include "SvProcessorV1.h"
 #include "SvProcessorV2.h"
-#include <thread>
+
+#include <iostream>
+#include <system_error>
+#include <unistd.h>
+
 //#include <pcl/point_cloud.h>
 //#include <pcl/point_types.h>
 //#include <pcl/visualization/pcl_visualizer.h>
