@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core qml quick
+QT += core gui qml quick widgets
 TEMPLATE = app
 
 TARGET = CSV

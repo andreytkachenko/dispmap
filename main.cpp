@@ -1,9 +1,7 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QQmlContext>
-
-
 #include <QPixmap>
 
 #include "svimage.h"
@@ -13,16 +11,18 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication a(argc, argv);
+
     QQmlApplicationEngine engine;
     SvImageProvider imageProvider;
 
-    QImage imgLeft("../ComputerVision/img/left8.png");
-    QImage imgRight("../ComputerVision/img/right8.png");
+    QImage imgLeft("../ComputerVision/img/left4_.png");
+    QImage imgRight("../ComputerVision/img/right4_.png");
     QImage imgStereo(imgLeft.width(), imgRight.height(), QImage::Format_RGB32);
 
     SvImage left(imgLeft);
     SvImage right(imgRight);
     SvImage stereo(imgStereo);
+    SvProcessor proc(&left, &right, &stereo, 4);
 
     imageProvider.addImage("left", &left);
     imageProvider.addImage("right", &right);
@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
     engine.addImageProvider("images", &imageProvider);
     engine.load(QUrl(QStringLiteral("qrc:///Main.qml")));
+    engine.rootContext()->setContextProperty("processor", &proc);
 
-    SvProcessor proc(&left, &right, &stereo, 1);
     proc.start();
 
     return a.exec();

@@ -31,9 +31,6 @@ SvProcessor::SvProcessor(SvImage* left, SvImage* right, SvImage* result, int num
 
         connect(&m_threads[i], &QThread::started, &m_workers[i], &SvWorker::start);
         connect(&m_workers[i], &SvWorker::finished, this, &SvProcessor::workerFinished);
-        connect(&m_workers[i], &SvWorker::finished, &m_threads[i], &QThread::quit);
-        connect(this, &SvProcessor::started, &m_workers[i], &SvWorker::start);
-        connect(&m_threads[i], &QThread::finished, &m_threads[i], &QThread::deleteLater);
     }
 
     for (i = 0; i < result->getHeight(); i++) {
@@ -48,8 +45,7 @@ SvProcessor::~SvProcessor()
 
 void SvProcessor::workerFinished(int workerId)
 {
-    Q_UNUSED(workerId)
-
+    qDebug() << "worker " << workerId  << " finished";
     m_workersFinished++;
     if (m_workersFinished == m_numberOfWorkers) {
         qDebug() << "finished";

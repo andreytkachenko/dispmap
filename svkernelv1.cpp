@@ -61,7 +61,7 @@ void SvKernelV1::exec(int line)
     unsigned int  x;
     int cursor, closest, tmp;
     int minErrorValue, tmpSmoothed, matched;
-    //int dist;
+    int dist;
 
     cursor       = 0;
 
@@ -70,10 +70,10 @@ void SvKernelV1::exec(int line)
         minErrorValue=-1;
 
         for (int i = 1; i < m_windowSize; i++) {
-            //dist = (abs(cursor - i));
+            dist = (abs(cursor - i));
 
             tmp = match(x, line, i);
-            tmpSmoothed  = tmp;// + (dist) * (1.0/diff);
+            tmpSmoothed  = tmp + dist;
 
             if (tmpSmoothed < minErrorValue || minErrorValue == -1) {
                 minErrorValue = tmpSmoothed;
@@ -91,6 +91,6 @@ void SvKernelV1::exec(int line)
             cursor = closest;
         }
 
-        m_result->putPixel(x, line, getPixelColor(cursor));
+        m_result->putPixel(x/* + cursor*/, line, getPixelColor(cursor));
     }
 }
