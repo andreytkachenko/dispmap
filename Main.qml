@@ -2,11 +2,20 @@ import QtQuick 2.2
 import QtQuick.Window 2.1
 import QtQuick.Controls 1.1
 
-Window {
+ApplicationWindow {
     id: mainWindow
     visible: true
     width: 800
     height: 600
+    property string state: 'Ready'
+
+    statusBar: StatusBar {
+        Row {
+            Label {
+                text: mainWindow.state
+            }
+        }
+    }
 
     Item {
         id: leftColumn
@@ -141,7 +150,7 @@ Window {
                         Item {
                             Image {
                                 id: image
-                                source: "img/left4.png"
+                                source: "image://images/result"
                                 smooth: false
                             }
                         }

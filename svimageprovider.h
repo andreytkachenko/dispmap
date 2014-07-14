@@ -6,6 +6,8 @@
 
 #include "svimage.h"
 
+#include <QDebug>
+
 class SvImageProvider : public QQuickImageProvider
 {
 protected:

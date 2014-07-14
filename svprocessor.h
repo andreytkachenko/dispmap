@@ -3,6 +3,7 @@
 
 #include<QObject>
 #include<QThread>
+#include<QDebug>
 
 #include "svimage.h"
 #include "svworker.h"

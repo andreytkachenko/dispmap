@@ -30,7 +30,7 @@ int SvKernelV1::diff(int lx, int ly, int rx, int ry)
     color  = abs(Gvalue - Rvalue) + abs(Bvalue - Gvalue);
 
     return (Gvalue + Rvalue + Bvalue) +
-            color * 4;
+            color << 2;
 }
 
 int SvKernelV1::match(int x, int y, int j)
@@ -73,7 +73,6 @@ void SvKernelV1::exec(int line)
             //dist = (abs(cursor - i));
 
             tmp = match(x, line, i);
-
             tmpSmoothed  = tmp;// + (dist) * (1.0/diff);
 
             if (tmpSmoothed < minErrorValue || minErrorValue == -1) {

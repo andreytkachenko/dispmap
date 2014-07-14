@@ -63,9 +63,7 @@ void SvImage::putPixel(int x, int y, int value)
         return;
     }
 
-    QColor color(value, value, value);
-
-    m_image->setPixel(x, y, color.rgb());
+    m_image->setPixel(x, y, qRgb(value, value, value));
 }
 
 unsigned int SvImage::getHeight() {

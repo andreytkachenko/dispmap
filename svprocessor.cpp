@@ -29,13 +29,15 @@ SvProcessor::SvProcessor(SvImage* left, SvImage* right, SvImage* result, int num
         m_workers[i].setKernel(m_kernel);
         m_workers[i].moveToThread(&m_threads[i]);
 
-        connect(this, &SvProcessor::stopped, &m_workers[i], &SvWorker::stop);
-        connect(this, &SvProcessor::started, &m_workers[i], &SvWorker::start);
+        connect(&m_threads[i], &QThread::started, &m_workers[i], &SvWorker::start);
         connect(&m_workers[i], &SvWorker::finished, this, &SvProcessor::workerFinished);
+        connect(&m_workers[i], &SvWorker::finished, &m_threads[i], &QThread::quit);
+        connect(this, &SvProcessor::started, &m_workers[i], &SvWorker::start);
+        connect(&m_threads[i], &QThread::finished, &m_threads[i], &QThread::deleteLater);
     }
 
     for (i = 0; i < result->getHeight(); i++) {
-        m_workers[i].addTask(i % m_numberOfWorkers);
+        m_workers[i % m_numberOfWorkers].addTask(i);
     }
 }
 SvProcessor::~SvProcessor()
@@ -50,6 +52,7 @@ void SvProcessor::workerFinished(int workerId)
 
     m_workersFinished++;
     if (m_workersFinished == m_numberOfWorkers) {
+        qDebug() << "finished";
         emit finished(m_startTime - 0);
     }
 }
@@ -64,8 +67,6 @@ void SvProcessor::start()
     for (i = 0; i < m_numberOfWorkers; i++) {
         m_threads[i].start();
     }
-
-    emit started();
 }
 
 void SvProcessor::stop()
