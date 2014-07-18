@@ -15,14 +15,15 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     SvImageProvider imageProvider;
 
-    QImage imgLeft("../ComputerVision/img/left4_.png");
-    QImage imgRight("../ComputerVision/img/right4_.png");
-    QImage imgStereo(imgLeft.width(), imgRight.height(), QImage::Format_RGB32);
+    QImage imgLeft("../CSV/img/left9.png");
+    QImage imgRight("../CSV/img/right.png");
+    QImage imgStereo(imgLeft.width(), imgLeft.height(), QImage::Format_RGB32);
 
     SvImage left(imgLeft);
     SvImage right(imgRight);
     SvImage stereo(imgStereo);
-    SvProcessor proc(&left, &right, &stereo, 4);
+
+    SvProcessor proc(&left, &right, &stereo, 4, 2);
 
     imageProvider.addImage("left", &left);
     imageProvider.addImage("right", &right);

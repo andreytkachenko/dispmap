@@ -22,21 +22,30 @@ int SvKernelV1::getPixelColor(int cursor)
 
 int SvKernelV1::diff(int lx, int ly, int rx, int ry)
 {
-    int Rvalue, Gvalue, Bvalue, color;
+    int Red, Green, Blue, color;
 
-    Rvalue = abs(m_left->getPixel(lx, ly, 0) - m_right->getPixel(rx, ry, 0));
-    Gvalue = abs(m_left->getPixel(lx, ly, 1) - m_right->getPixel(rx, ry, 1));
-    Bvalue = abs(m_left->getPixel(lx, ly, 2) - m_right->getPixel(rx, ry, 2));
-    color  = abs(Gvalue - Rvalue) + abs(Bvalue - Gvalue);
+    int Lvalue = m_left->getPixelValue(lx, ly);
+    int Rvalue = m_right->getPixelValue(rx, ry);
 
-    return (Gvalue + Rvalue + Bvalue) +
-            color << 2;
+    int dLvalue = m_left->getPixelValue(rx - 1, ry) - Lvalue;
+    int dRvalue = m_right->getPixelValue(rx - 1, ry) - Rvalue;
+
+    int dLsign = dLvalue >= 0 ? 1 : -1;
+    int dRsign = dRvalue >= 0 ? 1 : -1;
+
+    Red = abs(m_left->getPixel(lx, ly, 0) - m_right->getPixel(rx, ry, 0));
+    Green = abs(m_left->getPixel(lx, ly, 1) - m_right->getPixel(rx, ry, 1));
+    Blue = abs(m_left->getPixel(lx, ly, 2) - m_right->getPixel(rx, ry, 2));
+    color  = abs(Green - Red) + abs(Blue - Green);
+
+    return ((Green + Red + Blue) +
+            color << 2) + (dLsign == dRsign ? 0 : 100);
 }
 
 int SvKernelV1::match(int x, int y, int j)
 {
     int error = 0;
-    int ms = 4;
+    int ms = 5;
     int c = diff(x, y, x + j, y),
         l = 0, r = 0, t = 0, b = 0;
 
@@ -73,7 +82,7 @@ void SvKernelV1::exec(int line)
             dist = (abs(cursor - i));
 
             tmp = match(x, line, i);
-            tmpSmoothed  = tmp + dist;
+            tmpSmoothed  = tmp;
 
             if (tmpSmoothed < minErrorValue || minErrorValue == -1) {
                 minErrorValue = tmpSmoothed;
@@ -91,6 +100,6 @@ void SvKernelV1::exec(int line)
             cursor = closest;
         }
 
-        m_result->putPixel(x/* + cursor*/, line, getPixelColor(cursor));
+        m_result->putGrayPixel(x/* + cursor*/, line, getPixelColor(cursor));
     }
 }

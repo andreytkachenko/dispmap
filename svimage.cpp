@@ -53,7 +53,23 @@ int SvImage::getPixelValue(int x, int y) {
     return color.value();
 }
 
-void SvImage::putPixel(int x, int y, int value)
+int SvImage::getPixelSaturation(int x, int y)
+{
+    if (y >= m_image->height() ||
+        y < 0 ||
+        x >= m_image->width()
+        || x < 0) {
+
+        return 0;
+    }
+
+    QRgb rgb = m_image->pixel(x, y);
+    QColor color(rgb);
+
+    return color.saturation();
+}
+
+void SvImage::putGrayPixel(int x, int y, int value)
 {
     if (y >= m_image->height() ||
         y < 0 ||
@@ -64,6 +80,19 @@ void SvImage::putPixel(int x, int y, int value)
     }
 
     m_image->setPixel(x, y, qRgb(value, value, value));
+}
+
+void SvImage::putPixel(int x, int y, int red, int green, int blue)
+{
+    if (y >= m_image->height() ||
+        y < 0 ||
+        x >= m_image->width()
+        || x < 0) {
+
+        return;
+    }
+
+    m_image->setPixel(x, y, qRgb(red, green, blue));
 }
 
 unsigned int SvImage::getHeight() {

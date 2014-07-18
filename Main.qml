@@ -174,11 +174,49 @@ ApplicationWindow {
                     }
                 }
                 Tab {
-                    id: pclView
-                    title: "PCL View"
+                    id: leftImageView
+                    title: "Left Image"
 
                     Item {
-                        anchors.fill: parent
+                        Flickable {
+                            anchors.fill: parent
+                            contentWidth: image.width
+                            contentHeight: image.height
+                            interactive: true
+                            anchors.margins: 2
+                            clip: true
+
+                            Item {
+                                Image {
+                                    id: leftImage
+                                    source: "image://images/left"
+                                    smooth: false
+                                }
+                            }
+                        }
+                    }
+                }
+                Tab {
+                    id: rightImageView
+                    title: "Right Image"
+
+                    Item {
+                        Flickable {
+                            anchors.fill: parent
+                            contentWidth: image.width
+                            contentHeight: image.height
+                            interactive: true
+                            anchors.margins: 2
+                            clip: true
+
+                            Item {
+                                Image {
+                                    id: rightImage
+                                    source: "image://images/right"
+                                    smooth: false
+                                }
+                            }
+                        }
                     }
                 }
             }
