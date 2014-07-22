@@ -74,7 +74,7 @@ void SvKernelV1::exec(int line)
 
     cursor       = 0;
 
-    for (x = 0; x < m_result->getWidth(); x++) {
+    for (x = 0; x < m_result->getWidth(); x+=1) {
         closest = -1; minErrorValue = -1;matched=0;
         minErrorValue=-1;
 

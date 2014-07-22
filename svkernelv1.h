@@ -7,7 +7,7 @@ class SvKernelV1: public SvAbstractKernel
 {
 
 protected:
-    int m_windowSize = 150;
+    int m_windowSize = 160;
 
 public:
     void exec(int line) override;

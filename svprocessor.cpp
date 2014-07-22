@@ -49,7 +49,7 @@ void SvProcessor::workerFinished(int workerId)
     m_workersFinished++;
     if (m_workersFinished == m_numberOfWorkers) {
         qDebug() << "finished";
-        emit finished(m_startTime - 0);
+        emit finished(time(NULL) - m_startTime);
     }
 }
 
@@ -57,15 +57,15 @@ void SvProcessor::start()
 {
     unsigned int i;
 
-    m_startTime = 0;
+    m_startTime = time(NULL);
     m_workersFinished = 0;
 
     for (i = 0; i < m_numberOfWorkers; i++) {
-        m_threads[i].start();
+        m_threads[i].start(QThread::HighestPriority);
     }
 }
 
 void SvProcessor::stop()
 {
-    emit stopped(m_startTime - 0);
+    emit stopped(time(NULL) - m_startTime);
 }

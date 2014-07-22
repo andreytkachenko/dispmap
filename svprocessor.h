@@ -1,6 +1,8 @@
 #ifndef SVPROCESSOR_H
 #define SVPROCESSOR_H
 
+#include <time.h>
+
 #include<QObject>
 #include<QThread>
 #include<QDebug>
@@ -21,7 +23,7 @@ protected:
     SvAbstractKernel*   m_kernel;
     unsigned int        m_numberOfWorkers;
     unsigned int        m_workersFinished;
-    int                 m_startTime;
+    unsigned int        m_startTime;
 
 public:
     explicit SvProcessor(QObject *parent = 0);

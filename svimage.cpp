@@ -1,6 +1,6 @@
 #include "svimage.h"
 
-int SvImage::getPixel(int x, int y, int channel = -1) {
+int SvImage::getPixel(int x, int y, int channel) {
     if (y >= m_image->height() ||
         y < 0 ||
         x >= m_image->width()
@@ -23,6 +23,21 @@ int SvImage::getPixel(int x, int y, int channel = -1) {
     }
 }
 
+int SvImage::getPixelNormalizedHue(int x, int y) {
+    if (y >= m_image->height() ||
+        y < 0 ||
+        x >= m_image->width()
+        || x < 0) {
+
+        return 0;
+    }
+
+    QRgb rgb = m_image->pixel(x, y);
+    QColor color(rgb);
+
+    return (color.hsvHue() * getPixelSaturation(x, y)) / 255;
+}
+
 int SvImage::getPixelHue(int x, int y) {
     if (y >= m_image->height() ||
         y < 0 ||
@@ -35,7 +50,7 @@ int SvImage::getPixelHue(int x, int y) {
     QRgb rgb = m_image->pixel(x, y);
     QColor color(rgb);
 
-    return color.hue();
+    return color.hsvHue();
 }
 
 int SvImage::getPixelValue(int x, int y) {
@@ -69,6 +84,19 @@ int SvImage::getPixelSaturation(int x, int y)
     return color.saturation();
 }
 
+QRgb SvImage::getPixelRGB(int x, int y)
+{
+    if (y >= m_image->height() ||
+        y < 0 ||
+        x >= m_image->width()
+        || x < 0) {
+
+        return 0;
+    }
+
+    return m_image->pixel(x, y);
+}
+
 void SvImage::putGrayPixel(int x, int y, int value)
 {
     if (y >= m_image->height() ||
@@ -77,6 +105,10 @@ void SvImage::putGrayPixel(int x, int y, int value)
         || x < 0) {
 
         return;
+    }
+
+    if (value > 255) {
+        value = 255;
     }
 
     m_image->setPixel(x, y, qRgb(value, value, value));

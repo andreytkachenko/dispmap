@@ -20,7 +20,7 @@ ApplicationWindow {
     Connections {
         target: processor
         onFinished: {
-            statusBarState.text = "Ready";
+            statusBarState.text = "Ready " + elapsedTime;
         }
     }
 

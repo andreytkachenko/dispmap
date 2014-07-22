@@ -9,6 +9,7 @@ TEMPLATE = app
 
 TARGET = CSV
 CONFIG += c++11
+CONFIG += j4
 CONFIG -= console
 
 SOURCES += main.cpp \
@@ -17,7 +18,12 @@ SOURCES += main.cpp \
     svprocessor.cpp \
     svkernelv1.cpp \
     svkernelv2.cpp \
-    svimageprovider.cpp
+    svimageprovider.cpp \
+    svpoint.cpp \
+    svcurve.cpp \
+    svsimplepoint.cpp \
+    svfigure.cpp \
+    svobject.cpp
 
 HEADERS += \
     svimage.h \
@@ -26,7 +32,12 @@ HEADERS += \
     svabstractkernel.h \
     svkernelv1.h \
     svkernelv2.h \
-    svimageprovider.h
+    svimageprovider.h \
+    svpoint.h \
+    svcurve.h \
+    svsimplepoint.h \
+    svfigure.h \
+    svobject.h
 
 RESOURCES += \
     resource.qrc
