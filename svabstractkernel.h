@@ -2,19 +2,18 @@
 #define SVABSTRACTKERNEL_H
 
 #include "svimage.h"
+#include "svpointcloud.h"
 
 class SvAbstractKernel
 {
 
 protected:
-    SvImage* m_left;
-    SvImage* m_right;
-    SvImage* m_result;
+    SvImage* m_image;
+    SvPointCloud* m_pointCloud;
 
 public:
-    void setLeftImage(SvImage* image) {m_left = image;}
-    void setRightImage(SvImage* image) {m_right = image;}
-    void setResultImage(SvImage* image) {m_result = image;}
+    void setImage(SvImage* image) {m_image = image;}
+    void setPointCloud(SvPointCloud* pointCloud) {m_pointCloud = pointCloud;}
     virtual void exec(int line) = 0;
     virtual ~SvAbstractKernel() {}
 };

@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     SvImageProvider imageProvider;
 
-    QImage imgLeft("../CSV/img/left1.png");
+    QImage imgLeft("../CSV/img/right9.png");
     QImage imgRight("../CSV/img/right1.png");
     QImage imgStereo(imgLeft.width(), imgLeft.height(), QImage::Format_RGB32);
 

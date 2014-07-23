@@ -6,7 +6,7 @@ SvProcessor::SvProcessor(QObject *parent):
 
 }
 
-SvProcessor::SvProcessor(SvImage* left, SvImage* right, SvImage* result, int numberOfWorkers, int version)
+SvProcessor::SvProcessor(SvPointCloud* pointCloud, int numberOfWorkers, int version)
 {
     unsigned int i;
 
@@ -16,10 +16,7 @@ SvProcessor::SvProcessor(SvImage* left, SvImage* right, SvImage* result, int num
         m_kernel = new SvKernelV2();
     }
 
-    m_kernel->setLeftImage(left);
-    m_kernel->setRightImage(right);
-    m_kernel->setResultImage(result);
-
+    m_kernel->setPointCloud(pointCloud);
     m_numberOfWorkers = numberOfWorkers;
     m_workers = new SvWorker[m_numberOfWorkers];
     m_threads = new QThread[m_numberOfWorkers];
@@ -32,15 +29,38 @@ SvProcessor::SvProcessor(SvImage* left, SvImage* right, SvImage* result, int num
         connect(&m_threads[i], &QThread::started, &m_workers[i], &SvWorker::start);
         connect(&m_workers[i], &SvWorker::finished, this, &SvProcessor::workerFinished);
     }
-
-    for (i = 0; i < result->getHeight(); i++) {
-        m_workers[i % m_numberOfWorkers].addTask(i);
-    }
 }
+
 SvProcessor::~SvProcessor()
 {
     delete   m_kernel;
     delete[] m_workers;
+}
+
+void SvProcessor::enqueueImage(SvFrameId frame, SvImage *image)
+{
+    SvProcessorTask *task;
+
+    for (int i = 0; i < image->getHeight(); i++) {
+        task = new SvProcessorTask;
+        task->image = image;
+        task->line  = i;
+        m_queue.enqueue(task);
+    }
+}
+
+SvProcessorTask SvProcessor::nextTask()
+{
+    SvProcessorTask  task;
+    SvProcessorTask *taskPtr;
+
+    m_nextTaskMutex.lock();
+    taskPtr = m_queue.dequeue();
+    m_nextTaskMutex.unlock();
+    task = *taskPtr;
+    delete taskPtr;
+
+    return task;
 }
 
 void SvProcessor::workerFinished(int workerId)

@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     svcurve.cpp \
     svsimplepoint.cpp \
     svfigure.cpp \
-    svobject.cpp
+    svobject.cpp \
+    svpointcloud.cpp
 
 HEADERS += \
     svimage.h \
@@ -37,7 +38,9 @@ HEADERS += \
     svcurve.h \
     svsimplepoint.h \
     svfigure.h \
-    svobject.h
+    svobject.h \
+    svpointcloud.h \
+    svdefs.h
 
 RESOURCES += \
     resource.qrc

@@ -2,7 +2,7 @@
 #define SVPOINT_H
 
 #include "svsimplepoint.h"
-#include "svcurve.h"
+#include "svdefs.h"
 
 class SvCurve;
 

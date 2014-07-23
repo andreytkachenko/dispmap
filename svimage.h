@@ -2,8 +2,8 @@
 #define SVIMAGE_H
 
 #include <QImage>
-#include <QRgb>
 #include <QColor>
+#include <QRgb>
 
 class SvImage
 {

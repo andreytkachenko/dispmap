@@ -23,7 +23,7 @@ int SvKernelV2::rgbDiff(QRgb left, QRgb right)
 
     int minDiff= leftDiff < rightDiff ? rightDiff : leftDiff;
 
-    int diff = cLeft.value() - cRight.value();
+    int diff = qGray(left) - qGray(right);
     int hsvDiff = minDiff > 70 ? abs(cLeft.hsvHue() - cRight.hsvHue()) : 0;
     if (hsvDiff > 180) {
         hsvDiff = 360 - hsvDiff;
@@ -32,10 +32,10 @@ int SvKernelV2::rgbDiff(QRgb left, QRgb right)
     int dsign = sign(diff);
     dsign = dsign == 0 ? 1 : dsign;
 
-    return /*dsign * ((rightDiff - leftDiff)>>2) + */diff /*+ (hsvDiff > 5 ? dsign * 10 : 0)*/;
+    return dsign * (abs(rightDiff - leftDiff)>>2) + diff /*+ (hsvDiff > 5 ? dsign * 10 : 0)*/;
 }
 
-void SvKernelV2::exec(int line)
+void SvKernelV2::exec(SvImage *image, int line)
 {
     QRgb vtop, top, right, bottom, vbottom, _xy, xy;
 
@@ -44,7 +44,7 @@ void SvKernelV2::exec(int line)
 
     int value;
 
-    for (int x = 0; x < m_result->getWidth(); x++) {
+    for (int x = 0; x < image->getWidth(); x++) {
         value = 0;
 
         vtop    = m_left->getPixelRGB(x - 1, line - 3);
@@ -65,6 +65,7 @@ void SvKernelV2::exec(int line)
             if (dX == _dX) {
                 if (dX > dX_ && _dX > __dX ||
                     dX < dX_ && _dX < __dX) {
+
                     value += abs(dX);
                 }
             } else {
@@ -87,6 +88,7 @@ void SvKernelV2::exec(int line)
         }
 
         if (value > 0) {
+            m_pointCloud->addPoint();
             m_result->putGrayPixel(x - 1, line - 1, value);
         }
 
