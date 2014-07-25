@@ -7,7 +7,7 @@
 class SvFigure
 {
 protected:
-    SvPoint ends[2];
+    SvPoint *ends;
 
 
 public:

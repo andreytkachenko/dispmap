@@ -8,43 +8,41 @@
 #include <QDebug>
 #include <QQueue>
 #include <QMutex>
+#include <QException>
 
 #include "svimage.h"
 #include "svworker.h"
-#include "svabstractkernel.h"
-#include "svkernelv1.h"
-#include "svkernelv2.h"
+#include "svkernel.h"
 #include "svpointcloud.h"
 
 
-typedef struct {
-    SvImage *image;
-    int      line;
-} SvProcessorTask;
+class SvWorker;
 
+class SvNoMoreTasks: public QException
+{
+
+};
 
 class SvProcessor: public QObject
 {
     Q_OBJECT
 
 protected:
-    QThread*            m_threads;
-    SvWorker*           m_workers;
-    SvAbstractKernel*   m_kernel;
-    unsigned int        m_numberOfWorkers;
-    unsigned int        m_workersFinished;
-    unsigned int        m_startTime;
-    QQueue<SvProcessorTask*> m_queue;
-    QMutex              m_nextTaskMutex;
+    QThread*    m_threads;
+    SvWorker*   m_workers;
+    SvKernel*   m_kernel;
+    uint        m_numberOfWorkers;
+    uint        m_workersFinished;
+    uint        m_startTime;
+    QQueue<SvProcessorTask*> m_taskQueue;
+    QMutex      m_nextTaskMutex;
 
 public:
     explicit SvProcessor(QObject *parent = 0);
-    SvProcessor(SvPointCloud *pointCloud, int numberOfWorkers = 1, int version = 1);
+    SvProcessor(int numberOfWorkers = 1);
     ~SvProcessor();
     void execute();
-    void enqueueImage(SvFrameId frame, SvImage *image);
-
-protected:
+    void enqueueImage(SvPointCloud *pointCloud, SvImage *image);
     SvProcessorTask nextTask();
 
 protected slots:

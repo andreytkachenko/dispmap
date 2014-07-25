@@ -1,16 +1,16 @@
-#include "svkernelv2.h"
+#include "svkernel.h"
 
-SvKernelV2::SvKernelV2()
+SvKernel::SvKernel()
 {
 
 }
 
-SvKernelV2::~SvKernelV2()
+SvKernel::~SvKernel()
 {
 
 }
 
-int SvKernelV2::rgbDiff(QRgb left, QRgb right)
+int SvKernel::rgbDiff(QRgb left, QRgb right)
 {
     QColor cLeft(left);
     QColor cRight(right);
@@ -35,7 +35,7 @@ int SvKernelV2::rgbDiff(QRgb left, QRgb right)
     return dsign * (abs(rightDiff - leftDiff)>>2) + diff /*+ (hsvDiff > 5 ? dsign * 10 : 0)*/;
 }
 
-void SvKernelV2::exec(SvImage *image, int line)
+void SvKernel::exec(SvPointCloud *pcl, SvImage *image, int line)
 {
     QRgb vtop, top, right, bottom, vbottom, _xy, xy;
 
@@ -47,12 +47,12 @@ void SvKernelV2::exec(SvImage *image, int line)
     for (int x = 0; x < image->getWidth(); x++) {
         value = 0;
 
-        vtop    = m_left->getPixelRGB(x - 1, line - 3);
-        top     = m_left->getPixelRGB(x - 1, line - 2);
-        right   = m_left->getPixelRGB(x,     line - 1);
-        bottom  = m_left->getPixelRGB(x - 1, line);
-        vbottom = m_left->getPixelRGB(x - 1, line + 1);
-        xy      = m_left->getPixelRGB(x - 1, line - 1);
+        vtop    = image->getPixelRGB(x - 1, line - 3);
+        top     = image->getPixelRGB(x - 1, line - 2);
+        right   = image->getPixelRGB(x,     line - 1);
+        bottom  = image->getPixelRGB(x - 1, line);
+        vbottom = image->getPixelRGB(x - 1, line + 1);
+        xy      = image->getPixelRGB(x - 1, line - 1);
 
         dX_ = rgbDiff(_xy, right);
         dY_ = rgbDiff(vtop, top);
@@ -88,8 +88,8 @@ void SvKernelV2::exec(SvImage *image, int line)
         }
 
         if (value > 0) {
-            m_pointCloud->addPoint();
-            m_result->putGrayPixel(x - 1, line - 1, value);
+
+            //m_result->putGrayPixel(x - 1, line - 1, value);
         }
 
         __dX = _dX;

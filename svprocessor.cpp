@@ -6,17 +6,12 @@ SvProcessor::SvProcessor(QObject *parent):
 
 }
 
-SvProcessor::SvProcessor(SvPointCloud* pointCloud, int numberOfWorkers, int version)
+SvProcessor::SvProcessor(int numberOfWorkers)
 {
-    unsigned int i;
+    uint i;
 
-    if (version == 1) {
-        m_kernel = new SvKernelV1();
-    } else if (version == 2) {
-        m_kernel = new SvKernelV2();
-    }
+    m_kernel = new SvKernel();
 
-    m_kernel->setPointCloud(pointCloud);
     m_numberOfWorkers = numberOfWorkers;
     m_workers = new SvWorker[m_numberOfWorkers];
     m_threads = new QThread[m_numberOfWorkers];
@@ -37,26 +32,30 @@ SvProcessor::~SvProcessor()
     delete[] m_workers;
 }
 
-void SvProcessor::enqueueImage(SvFrameId frame, SvImage *image)
+void SvProcessor::enqueueImage(SvPointCloud *pointCloud, SvImage *image)
 {
     SvProcessorTask *task;
 
-    for (int i = 0; i < image->getHeight(); i++) {
+    for (uint i = 0; i < image->getHeight(); i++) {
         task = new SvProcessorTask;
         task->image = image;
         task->line  = i;
-        m_queue.enqueue(task);
+        task->pointCloud = pointCloud;
+        m_taskQueue.enqueue(task);
     }
 }
 
 SvProcessorTask SvProcessor::nextTask()
 {
-    SvProcessorTask  task;
-    SvProcessorTask *taskPtr;
+    SvProcessorTask  task, *taskPtr;
+    if (!m_taskQueue.size()) {
+        throw new SvNoMoreTasks();
+    }
 
     m_nextTaskMutex.lock();
-    taskPtr = m_queue.dequeue();
+    taskPtr = m_taskQueue.dequeue();
     m_nextTaskMutex.unlock();
+
     task = *taskPtr;
     delete taskPtr;
 
@@ -75,13 +74,13 @@ void SvProcessor::workerFinished(int workerId)
 
 void SvProcessor::start()
 {
-    unsigned int i;
+    uint i;
 
     m_startTime = time(NULL);
     m_workersFinished = 0;
 
     for (i = 0; i < m_numberOfWorkers; i++) {
-        m_threads[i].start(QThread::HighestPriority);
+        m_threads[i].start(QThread::HighPriority);
     }
 }
 

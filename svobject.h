@@ -3,6 +3,9 @@
 
 #include "svfigure.h"
 
+class SvFigure;
+
+
 class SvObject
 {
 protected:

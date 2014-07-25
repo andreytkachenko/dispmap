@@ -16,23 +16,21 @@ SOURCES += main.cpp \
     svimage.cpp \
     svworker.cpp \
     svprocessor.cpp \
-    svkernelv1.cpp \
-    svkernelv2.cpp \
     svimageprovider.cpp \
     svpoint.cpp \
     svcurve.cpp \
     svsimplepoint.cpp \
     svfigure.cpp \
     svobject.cpp \
-    svpointcloud.cpp
+    svpointcloud.cpp \
+    svkernel.cpp \
+    svpointcloudviewer.cpp \
+    svpointcloudrenderer.cpp
 
 HEADERS += \
     svimage.h \
     svworker.h \
     svprocessor.h \
-    svabstractkernel.h \
-    svkernelv1.h \
-    svkernelv2.h \
     svimageprovider.h \
     svpoint.h \
     svcurve.h \
@@ -40,7 +38,10 @@ HEADERS += \
     svfigure.h \
     svobject.h \
     svpointcloud.h \
-    svdefs.h
+    svdefs.h \
+    svkernel.h \
+    svpointcloudviewer.h \
+    svpointcloudrenderer.h
 
 RESOURCES += \
     resource.qrc

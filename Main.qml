@@ -1,6 +1,7 @@
 import QtQuick 2.2
 import QtQuick.Window 2.1
 import QtQuick.Controls 1.1
+import SvPCV 1.0
 
 ApplicationWindow {
     id: mainWindow
@@ -147,29 +148,11 @@ ApplicationWindow {
                 anchors.fill: parent
                 Tab {
                     id: imageView
-                    title: "Image View"
+                    title: "PointCloud View"
                     Item {
-                        Flickable {
+                        anchors.fill: parent
+                        SvPointCloudViewer {
                             anchors.fill: parent
-                            contentWidth: image.width
-                            contentHeight: image.height
-                            interactive: true
-                            anchors.margins: 2
-                            clip: true
-
-                            Item {
-                                Image {
-                                    id: image
-                                    source: ""
-                                    smooth: false
-                                }
-                                Connections {
-                                    target: processor
-                                    onFinished: {
-                                        image.source = "image://images/result";
-                                    }
-                                }
-                            }
                         }
                     }
                 }

@@ -7,33 +7,38 @@
 #include "svimage.h"
 #include "svprocessor.h"
 #include "svimageprovider.h"
+#include "svpointcloudviewer.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication a(argc, argv);
+
+    qmlRegisterType<SvPointCloudViewer>("SvPCV", 1, 0, "SvPointCloudViewer");
 
     QQmlApplicationEngine engine;
     SvImageProvider imageProvider;
 
     QImage imgLeft("../CSV/img/right9.png");
     QImage imgRight("../CSV/img/right1.png");
-    QImage imgStereo(imgLeft.width(), imgLeft.height(), QImage::Format_RGB32);
 
     SvImage left(imgLeft);
     SvImage right(imgRight);
-    SvImage stereo(imgStereo);
 
-    SvProcessor proc(&left, &right, &stereo, 4, 2);
+    SvPointCloud pointCloud(imgLeft.width(), imgLeft.height());
+
+    SvProcessor proc(4);
+
+    proc.enqueueImage(&pointCloud, &left);
 
     imageProvider.addImage("left", &left);
     imageProvider.addImage("right", &right);
-    imageProvider.addImage("result", &stereo);
 
     engine.addImageProvider("images", &imageProvider);
-    engine.load(QUrl(QStringLiteral("qrc:///Main.qml")));
     engine.rootContext()->setContextProperty("processor", &proc);
+    engine.load(QUrl(QStringLiteral("qrc:///Main.qml")));
 
     proc.start();
+
 
     return a.exec();
 }

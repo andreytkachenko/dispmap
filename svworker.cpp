@@ -6,7 +6,7 @@ SvWorker::SvWorker(QObject *parent) :
 
 }
 
-SvWorker::SvWorker(SvProcessorTask *processor, SvAbstractKernel *kernel)
+SvWorker::SvWorker(SvProcessor *processor, SvKernel *kernel)
 {
     m_processor = processor;
     m_kernel = kernel;
@@ -28,7 +28,7 @@ void SvWorker::start()
             break;
         }
 
-        m_kernel->exec(task.image, task.line);
+        m_kernel->exec(task.pointCloud, task.image, task.line);
     }
 
     emit finished(m_id);

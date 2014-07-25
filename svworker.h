@@ -4,25 +4,27 @@
 #include <QObject>
 #include <QList>
 
-#include "svabstractkernel.h"
+#include "svkernel.h"
 #include "svprocessor.h"
 #include "svimage.h"
+
+class SvProcessor;
 
 class SvWorker : public QObject
 {
     Q_OBJECT
 
 protected:
-    int                 m_id;
-    SvAbstractKernel   *m_kernel;
-    SvProcessor        *m_processor;
+    int          m_id;
+    SvKernel    *m_kernel;
+    SvProcessor *m_processor;
 
 public:
     explicit SvWorker(QObject *parent = 0);
-    SvWorker(SvProcessorTask *processor, SvAbstractKernel *kernel);
+    SvWorker(SvProcessor *processor, SvKernel *kernel);
 
     void setId(int id) {m_id = id;}
-    void setKernel(SvAbstractKernel* kernel) {m_kernel = kernel;}
+    void setKernel(SvKernel* kernel) {m_kernel = kernel;}
 
 signals:
     void finished(int id);
