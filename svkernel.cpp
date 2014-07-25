@@ -35,8 +35,9 @@ int SvKernel::rgbDiff(QRgb left, QRgb right)
     return dsign * (abs(rightDiff - leftDiff)>>2) + diff /*+ (hsvDiff > 5 ? dsign * 10 : 0)*/;
 }
 
-void SvKernel::exec(SvPointCloud *pcl, SvImage *image, int line)
+void SvKernel::exec(SvPointCloud *pc, SvImage *image, int line)
 {
+    SvPoint p;
     QRgb vtop, top, right, bottom, vbottom, _xy, xy;
 
     int __dX, _dX, dX, dX_,
@@ -88,8 +89,12 @@ void SvKernel::exec(SvPointCloud *pcl, SvImage *image, int line)
         }
 
         if (value > 0) {
+            p.setX(x - 1);
+            p.setY(line - 1);
+            p.setHorizontalValue(value);
+            p.setVerticalValue(value);
 
-            //m_result->putGrayPixel(x - 1, line - 1, value);
+            pc->addPoint(p);
         }
 
         __dX = _dX;

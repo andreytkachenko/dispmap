@@ -3,7 +3,7 @@
 
 #include <QDebug>
 
-typedef unsigned int SvFrameId;
+typedef unsigned int SvPointId;
 typedef unsigned int uint;
 
 #include "svpointcloud.h"

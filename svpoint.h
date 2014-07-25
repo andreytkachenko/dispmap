@@ -8,6 +8,7 @@ class SvCurve;
 
 class SvPoint: public SvSimplePoint
 {
+
 public:
     enum Sides {
         TOP,
@@ -24,11 +25,18 @@ public:
     };
 
 protected:
-    SvCurve* m_curves;
-    FlowType m_type;
+    uint      m_id;
+    uint      m_curveCount;
+    SvCurve  *m_curves[8];
+    FlowType  m_type;
 
 public:
     SvPoint();
+    SvPoint(SvPoint &point);
+
+    void addCurve(SvCurve *curve);
+    uint curveCount() {return m_curveCount; }
+    SvCurve *curve(uint index) {return m_curves[index]; }
 };
 
 #endif // SVPOINT_H

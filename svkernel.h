@@ -10,7 +10,7 @@ class SvKernel
 public:
     SvKernel();
     virtual ~SvKernel();
-    void exec(SvPointCloud *pcl, SvImage *image, int line);
+    void exec(SvPointCloud *pc, SvImage *image, int line);
     int rgbDiff(QRgb left, QRgb right);
 };
 

@@ -7,11 +7,15 @@
 class SvFigure
 {
 protected:
-    SvPoint *ends;
-
+    QColor          m_color;
+    QList<SvCurve*> m_curves;
 
 public:
-    SvFigure();
+    SvFigure(SvCurve *curve);
+
+    void addCurve(SvCurve *curve){m_curves.pop_back(curve); }
+    SvCurve *findCurveByPoint();
+    SvFigure split(SvPoint *point);
 };
 
 #endif // SVFIGURE_H
