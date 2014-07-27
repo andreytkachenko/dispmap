@@ -5,7 +5,11 @@ SvFigure::SvFigure(SvCurve *curve)
     addCurve(curve);
 }
 
-SvCurve *SvFigure::findCurveByPoint()
+SvFigure::SvFigure()
+{
+}
+
+SvCurve *SvFigure::findCurveByPoint(SvPoint *point)
 {
     foreach(SvCurve* curve, m_curves) {
         if (curve->hasPoint(point)) {

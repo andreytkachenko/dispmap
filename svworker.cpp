@@ -6,12 +6,6 @@ SvWorker::SvWorker(QObject *parent) :
 
 }
 
-SvWorker::SvWorker(SvProcessor *processor, SvKernel *kernel)
-{
-    m_processor = processor;
-    m_kernel = kernel;
-}
-
 void SvWorker::stop()
 {
 

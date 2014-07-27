@@ -23,10 +23,10 @@ private:
 public:
     SvPoint* head() {return m_points.first(); }
     SvPoint* tail() {return m_points.last(); }
-    SvPoint* tail() {return m_points.last(); }
     void setInner(SvFigure *figure) {m_inner = figure; }
     void setOuter(SvFigure *figure) {m_outer = figure; }
     void addPoint(SvPoint *point);
+    bool hasPoint(SvPoint *point);
     SvCurve *cut(SvPoint *point);
 };
 

@@ -21,11 +21,10 @@ protected:
 
 public:
     explicit SvWorker(QObject *parent = 0);
-    SvWorker(SvProcessor *processor, SvKernel *kernel);
 
     void setId(int id) {m_id = id;}
     void setKernel(SvKernel* kernel) {m_kernel = kernel;}
-
+    void setProcessor(SvProcessor* processor) {m_processor = processor;}
 signals:
     void finished(int id);
 

@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     SvImageProvider imageProvider;
 
-    QImage imgLeft("../CSV/img/right9.png");
+    QImage imgLeft("../ComputerVision/img/left9.png");
     QImage imgRight("../CSV/img/right1.png");
 
     SvImage left(imgLeft);
@@ -35,10 +35,10 @@ int main(int argc, char *argv[])
 
     engine.addImageProvider("images", &imageProvider);
     engine.rootContext()->setContextProperty("processor", &proc);
+    engine.rootContext()->setContextProperty("pointCloud", &pointCloud);
     engine.load(QUrl(QStringLiteral("qrc:///Main.qml")));
 
     proc.start();
-
 
     return a.exec();
 }

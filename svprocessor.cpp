@@ -19,6 +19,7 @@ SvProcessor::SvProcessor(int numberOfWorkers)
     for (i = 0; i < m_numberOfWorkers; i++) {
         m_workers[i].setId(i);
         m_workers[i].setKernel(m_kernel);
+        m_workers[i].setProcessor(this);
         m_workers[i].moveToThread(&m_threads[i]);
 
         connect(&m_threads[i], &QThread::started, &m_workers[i], &SvWorker::start);
@@ -49,7 +50,7 @@ SvProcessorTask SvProcessor::nextTask()
 {
     SvProcessorTask  task, *taskPtr;
     if (!m_taskQueue.size()) {
-        throw new SvNoMoreTasks();
+        throw SvNoMoreTasks();
     }
 
     m_nextTaskMutex.lock();

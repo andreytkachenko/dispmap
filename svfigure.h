@@ -1,6 +1,8 @@
 #ifndef SVFIGURE_H
 #define SVFIGURE_H
 
+#include <QColor>
+
 #include "svpoint.h"
 #include "svcurve.h"
 
@@ -11,10 +13,11 @@ protected:
     QList<SvCurve*> m_curves;
 
 public:
+    SvFigure();
     SvFigure(SvCurve *curve);
 
-    void addCurve(SvCurve *curve){m_curves.pop_back(curve); }
-    SvCurve *findCurveByPoint();
+    void addCurve(SvCurve *curve){m_curves.push_back(curve); }
+    SvCurve *findCurveByPoint(SvPoint *point);
     SvFigure split(SvPoint *point);
 };
 
