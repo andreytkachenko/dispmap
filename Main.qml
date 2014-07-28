@@ -152,7 +152,7 @@ ApplicationWindow {
                     Item {
                         anchors.fill: parent
                         SvPointCloudViewer {
-                            //pointCloud: pointCloud
+                            pointCloud: app.getPointCloud()
                             anchors.fill: parent
                         }
                     }

@@ -23,8 +23,8 @@ class SvPointCloud: public QObject
     friend class SvObject;
 
 protected:
-    uint             m_pointFiledHeight;
-    uint             m_pointFiledWidth;
+    uint             m_pointFieldHeight;
+    uint             m_pointFieldWidth;
     SvPoint***       m_pointField;
     QList<SvCurve*>  m_curves;
     QList<SvFigure*> m_figures;
@@ -38,7 +38,10 @@ public:
     SvFigure *createFigure();
     SvObject *createObject();
 
-    void addPoint(SvPoint point);
+    void addPoint(SvPoint &point);
+    uint getWidth() { return m_pointFieldWidth; }
+    uint getHeight() { return m_pointFieldHeight; }
+    SvPoint *point(uint x, uint y) { return m_pointField[y][x]; }
 };
 
 #endif // SVPOINTCLOUD_H

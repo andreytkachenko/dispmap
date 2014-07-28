@@ -89,10 +89,13 @@ void SvKernel::exec(SvPointCloud *pc, SvImage *image, int line)
         }
 
         if (value > 0) {
-            p.setX(x - 1);
-            p.setY(line - 1);
+            if (x > 0 && line > 0){
+                p.setX(x - 1);
+                p.setY(line - 1);
+                p.setColor(qRgb(value, value, value));
 
-            pc->addPoint(p);
+                pc->addPoint(p);
+            }
         }
 
         __dX = _dX;

@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     svobject.cpp \
     svpointcloud.cpp \
     svkernel.cpp \
-    svpointcloudviewer.cpp
+    svpointcloudviewer.cpp \
+    svapplicationcontext.cpp
 
 HEADERS += \
     svimage.h \
@@ -39,7 +40,8 @@ HEADERS += \
     svpointcloud.h \
     svdefs.h \
     svkernel.h \
-    svpointcloudviewer.h
+    svpointcloudviewer.h \
+    svapplicationcontext.h
 
 RESOURCES += \
     resource.qrc

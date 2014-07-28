@@ -2,6 +2,7 @@
 #define SVDEFS_H
 
 #include <QDebug>
+#include <QRgb>
 
 typedef unsigned int SvPointId;
 typedef unsigned int uint;

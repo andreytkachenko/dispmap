@@ -29,6 +29,7 @@ protected:
     uint      m_curveCount;
     SvCurve  *m_curves[8];
     FlowType  m_type;
+    QRgb      m_color;
 
 public:
     SvPoint();
@@ -36,6 +37,8 @@ public:
 
     void addCurve(SvCurve *curve);
     uint curveCount() {return m_curveCount; }
+    QRgb color() { return m_color; }
+    void setColor(QRgb color) { m_color = color; }
     SvCurve *curve(uint index) {return m_curves[index]; }
 };
 

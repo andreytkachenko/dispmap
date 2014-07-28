@@ -7,7 +7,8 @@ SvPoint::SvPoint()
 
 SvPoint::SvPoint(SvPoint &point)
 {
-
+    m_px = point.x();
+    m_py = point.y();
 }
 
 void SvPoint::addCurve(SvCurve *curve)

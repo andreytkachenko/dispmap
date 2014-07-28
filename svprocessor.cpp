@@ -49,12 +49,16 @@ void SvProcessor::enqueueImage(SvPointCloud *pointCloud, SvImage *image)
 SvProcessorTask SvProcessor::nextTask()
 {
     SvProcessorTask  task, *taskPtr;
+
+    m_nextTaskMutex.lock();
+
     if (!m_taskQueue.size()) {
+        m_nextTaskMutex.unlock();
         throw SvNoMoreTasks();
     }
 
-    m_nextTaskMutex.lock();
     taskPtr = m_taskQueue.dequeue();
+
     m_nextTaskMutex.unlock();
 
     task = *taskPtr;

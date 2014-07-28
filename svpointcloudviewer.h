@@ -8,13 +8,15 @@
 #include <QtGui/QOpenGLContext>
 
 #include "svpointcloud.h"
+#include "svapplicationcontext.h"
 
 class SvPointCloudViewer : public QQuickPaintedItem
 {
     Q_OBJECT
 
-    //Q_PROPERTY(QObject *pointCloud READ pointCloud WRITE setPointCloud NOTIFY pointCloudChanged)
+    Q_PROPERTY(SvPointCloud *pointCloud READ pointCloud WRITE setPointCloud NOTIFY pointCloudChanged)
 
+   // Q_PROPERTY(QString test123 READ pointCloud WRITE setPointCloud NOTIFY pointCloudChanged)
 //    Q_PROPERTY(qreal cameraX READ cameraX WRITE setCameraX NOTIFY cameraXChanged)
 //    Q_PROPERTY(qreal cameraY READ cameraY WRITE setCameraY NOTIFY cameraYChanged)
 //    Q_PROPERTY(qreal cameraZ READ cameraZ WRITE setCameraZ NOTIFY cameraZChanged)
@@ -24,8 +26,6 @@ protected:
     qreal m_cameraX;
     qreal m_cameraY;
     qreal m_cameraZ;
-
-    QOpenGLShaderProgram *m_program;
 
 public:
     explicit SvPointCloudViewer(QQuickItem *parent = 0);
