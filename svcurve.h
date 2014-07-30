@@ -15,12 +15,13 @@ protected:
     SvFigure *m_outer;
 
     QList<SvPoint*> m_points;
-    SvSimplePoint *m_keyPoints;
+    QList<SvSimplePoint*> m_keyPoints;
 
 private:
     SvCurve();
 
 public:
+    QList<SvPoint*> &points() {return m_points; }
     SvPoint* head() {return m_points.first(); }
     SvPoint* tail() {return m_points.last(); }
     void setInner(SvFigure *figure) {m_inner = figure; }

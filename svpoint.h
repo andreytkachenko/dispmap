@@ -10,26 +10,19 @@ class SvPoint: public SvSimplePoint
 {
 
 public:
-    enum Sides {
-        TOP,
-        BOTTOM,
-        RIGHT,
-        LEFT
-    };
-
-    enum FlowType {
-        HORIZONTAL,
-        VERTICAL,
-        SLASH,
-        BACK_SLASH
+    enum DiffType {
+        LEFT      = 0,
+        LEFT_TOP  = 1,
+        TOP       = 2,
+        RIGHT_TOP = 3
     };
 
 protected:
     uint      m_id;
     uint      m_curveCount;
     SvCurve  *m_curves[8];
-    FlowType  m_type;
-    QRgb      m_color;
+    int       m_diff[4];
+    QRgb      m_colors[4];
 
 public:
     SvPoint();
@@ -37,9 +30,12 @@ public:
 
     void addCurve(SvCurve *curve);
     uint curveCount() {return m_curveCount; }
-    QRgb color() { return m_color; }
-    void setColor(QRgb color) { m_color = color; }
-    SvCurve *curve(uint index) {return m_curves[index]; }
+    SvCurve *curve(uint index) { return m_curves[index]; }
+
+    int  parallelism(SvPoint *p, DiffType type);
+    int  diff(DiffType index) { return m_diff[index]; }
+    void setDiff(int lDiff, int ltDiff, int tDiff, int rtDiff);
+    void setColors(QRgb left, QRgb top, QRgb right, QRgb bottom);
 };
 
 #endif // SVPOINT_H

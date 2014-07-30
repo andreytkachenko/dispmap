@@ -32,34 +32,32 @@ int SvKernel::rgbDiff(QRgb left, QRgb right)
     int dsign = sign(diff);
     dsign = dsign == 0 ? 1 : dsign;
 
-    return dsign * (abs(rightDiff - leftDiff)>>2) + diff /*+ (hsvDiff > 5 ? dsign * 10 : 0)*/;
+    return /*dsign * (abs(rightDiff - leftDiff)>>2) + */diff /*+ (hsvDiff > 5 ? dsign * 10 : 0)*/;
 }
 
 void SvKernel::exec(SvPointCloud *pc, SvImage *image, int line)
 {
     SvPoint p;
-    QRgb vtop, top, right, bottom, vbottom, _xy, xy;
+    QRgb vtop, top, right, bottom, vbottom, center;
+    QRgb rTop, lTop;
 
     int __dX, _dX, dX, dX_,
         __dY, _dY, dY, dY_;
 
-    int value;
+    int hDiff, vDiff;
 
     for (int x = 0; x < image->getWidth(); x++) {
-        value = 0;
+        hDiff = 0; vDiff = 0;
 
-        vtop    = image->getPixelRGB(x - 1, line - 3);
         top     = image->getPixelRGB(x - 1, line - 2);
         right   = image->getPixelRGB(x,     line - 1);
         bottom  = image->getPixelRGB(x - 1, line);
-        vbottom = image->getPixelRGB(x - 1, line + 1);
-        xy      = image->getPixelRGB(x - 1, line - 1);
+        vtop    = image->getPixelRGB(x - 1, line - 3);
 
-        dX_ = rgbDiff(_xy, right);
-        dY_ = rgbDiff(vtop, top);
-        dY  = rgbDiff(top, _xy);
-        _dY = rgbDiff(_xy, bottom);
-        __dY = rgbDiff(bottom, vbottom);
+        dX_  = rgbDiff(center, right);
+        dY_  = rgbDiff(vtop, top);
+        dY   = rgbDiff(top, center);
+        _dY  = rgbDiff(center, bottom);
 
         if ( dX >= _dX && dX > dX_ ||
              dX <= _dX && dX < dX_) {
@@ -67,10 +65,10 @@ void SvKernel::exec(SvPointCloud *pc, SvImage *image, int line)
                 if (dX > dX_ && _dX > __dX ||
                     dX < dX_ && _dX < __dX) {
 
-                    value += abs(dX);
+                    hDiff = abs(dX);
                 }
             } else {
-                value += abs(dX);
+                hDiff = abs(dX);
             }
         }
 
@@ -78,23 +76,28 @@ void SvKernel::exec(SvPointCloud *pc, SvImage *image, int line)
              dY <= _dY && dY < dY_) {
 
             if (dY == _dY) {
+                vbottom = image->getPixelRGB(x - 1, line + 1);
+                __dY = rgbDiff(bottom, vbottom);
+
                 if (dY > dY_ && _dY > __dY ||
                     dY < dY_ && _dY < __dY) {
 
-                    value += abs(dY);
+                    vDiff = abs(dY);
                 }
             } else {
-                value += abs(dY);
+                vDiff = abs(dY);
             }
         }
 
-        if (value > 0) {
-            if (x > 0 && line > 0){
+        if (hDiff > 0 || vDiff > 0) {
+            if (x > 1 && line > 1){
+                lTop  = image->getPixelRGB(x - 2, line - 2);
+                rTop  = image->getPixelRGB(x,     line - 2);
+
                 p.setX(x - 1);
                 p.setY(line - 1);
-                int color = value > 255 ? 255 : value;
 
-                p.setColor(qRgb(value, value, value));
+                p.setDiff(hDiff, rgbDiff(center, lTop), vDiff, rgbDiff(center, rTop));
 
                 pc->addPoint(p);
             }
@@ -103,7 +106,7 @@ void SvKernel::exec(SvPointCloud *pc, SvImage *image, int line)
         __dX = _dX;
         _dX = dX;
          dX = dX_;
-        _xy = right;
+        center = right;
     }
 }
 

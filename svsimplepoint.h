@@ -12,9 +12,9 @@ public:
     int y() {return m_py;}
     int z() {return m_pz;}
 
-    int setX(int px) {m_px = px;}
-    int setY(int py) {m_py = py;}
-    int setZ(int pz) {m_pz = pz;}
+    void setX(int px) {m_px = px;}
+    void setY(int py) {m_py = py;}
+    void setZ(int pz) {m_pz = pz;}
 
     SvSimplePoint();
 };

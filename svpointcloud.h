@@ -42,6 +42,8 @@ public:
     uint getWidth() { return m_pointFieldWidth; }
     uint getHeight() { return m_pointFieldHeight; }
     SvPoint *point(uint x, uint y) { return m_pointField[y][x]; }
+    QList<SvCurve*> &curves() { return m_curves; }
+    QList<SvFigure*> &figures() { return m_figures; }
 };
 
 #endif // SVPOINTCLOUD_H

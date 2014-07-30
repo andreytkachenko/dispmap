@@ -19,7 +19,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     SvImageProvider imageProvider;
 
-    QImage imgLeft("../ComputerVision/img/left9.png");
+    QImage imgLeft("../CSV/img/left3.png");
+    //QImage imgLeft("../CSV/img/right1.png");
     QImage imgRight("../CSV/img/right1.png");
 
     SvImage left(imgLeft);
