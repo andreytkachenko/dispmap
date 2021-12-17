@@ -1,40 +1,52 @@
-use image::{GrayImage, RgbImage};
+use image::{buffer::PixelsMut, GrayImage, Luma, RgbImage, GenericImageView, Rgb};
 
-fn diff(left_image: &RgbImage, right_image: &RgbImage, lx: u32, ly: u32, rx: u32, ry: u32) -> i32 {
-    let r = (left_image.get_pixel(lx, ly)[0] as i8 - right_image.get_pixel(rx, ry)[0] as i8).abs()
-        as i32;
-    let g = (left_image.get_pixel(lx, ly)[1] as i8 - right_image.get_pixel(rx, ry)[1] as i8).abs()
-        as i32;
-    let b = (left_image.get_pixel(lx, ly)[2] as i8 - right_image.get_pixel(rx, ry)[2] as i8).abs()
-        as i32;
+fn diff(left: Rgb<u8>, right: Rgb<u8>) -> i32 {
+    let r = (left[0] as i32 - right[0] as i32).abs();
+    let g = (left[1] as i32 - right[1] as i32).abs();
+    let b = (left[2] as i32 - right[2] as i32).abs();
+
     let color = (g - r).abs() + (b - g).abs();
 
     (r + g + b) + color * 4
 }
 
-fn match_pixels(left_image: &RgbImage, right_image: &RgbImage, x: u32, y: u32, j: u32) -> i32 {
-    let mut error = 0;
-    let ms = 4;
-    let c = diff(left_image, right_image, x, y, x + j, y);
-    let mut l = 0;
-    let mut r = 0;
-    let mut t = 0;
-    let mut b = 0;
+fn match_box(left: [Rgb<u8>; 16], right: [Rgb<u8>; 16]) -> i32 {
+    let mut sqr_sum = 0;
 
-    error = c;
-
-    for i in 1..=ms {
-        l += diff(left_image, right_image, x - i, y, x + j - i, y);
-        r += diff(left_image, right_image, x + i, y, x + j + i, y);
-        t += diff(left_image, right_image, x, y - i, x + j, y - i);
-        b += diff(left_image, right_image, x, y + i, x + j, y + i);
+    for (l, r) in left.into_iter().zip(right.into_iter()) {
+        sqr_sum += diff(l, r);
     }
 
-    error += if l > r { r } else { l };
-    error += if t > b { b } else { t };
-    //error += l + r + b + t;
+    sqr_sum
+}
 
-    error
+fn px(img: &RgbImage, x: u32, y: u32) -> Rgb<u8> {
+    if x >= img.width() || y >= img.height() {
+        return Rgb([0,0,0]);
+    }
+
+    img.get_pixel(x, y).clone()
+}
+
+fn match_pixels(left: &RgbImage, right: &RgbImage, x: u32, y: u32, j: u32) -> i32 {
+    let lx = x;
+    let rx = x + j;
+
+    match_box(
+        [
+            px(left, lx, y    ), px(left, lx + 1, y    ), px(left, lx + 2, y    ), px(left, lx + 3, y    ),
+            px(left, lx, y + 1), px(left, lx + 1, y + 1), px(left, lx + 2, y + 1), px(left, lx + 3, y + 1),
+            px(left, lx, y + 2), px(left, lx + 1, y + 2), px(left, lx + 2, y + 2), px(left, lx + 3, y + 2),
+            px(left, lx, y + 3), px(left, lx + 1, y + 3), px(left, lx + 2, y + 3), px(left, lx + 3, y + 3),
+        ],
+        [
+            px(right, rx, y    ), px(right, rx + 1, y    ), px(right, rx + 2, y    ), px(right, rx + 3, y    ),
+            px(right, rx, y + 1), px(right, rx + 1, y + 1), px(right, rx + 2, y + 1), px(right, rx + 3, y + 1),
+            px(right, rx, y + 2), px(right, rx + 1, y + 2), px(right, rx + 2, y + 2), px(right, rx + 3, y + 2),
+            px(right, rx, y + 3), px(right, rx + 1, y + 3), px(right, rx + 2, y + 3), px(right, rx + 3, y + 3),
+        ]
+
+    )
 }
 
 fn get_pixel_color(image: &RgbImage, cursor: i32) -> f32 {
@@ -51,31 +63,21 @@ fn get_pixel_hue(image: &RgbImage, x: u32, y: u32) -> i32 {
     (pixel[1] as i32 - pixel[0] as i32).abs() + (pixel[2] as i32 - pixel[1] as i32).abs()
 }
 
-fn get_pixel_value(image: &RgbImage, x: u32, y: u32) -> i32 {
-    let pixel = image.get_pixel(x, y);
-
-    (pixel[0] as i32 + pixel[1] as i32 + pixel[2] as i32) / 3
-}
-
-fn exec(res: &mut GrayImage, left: &RgbImage, right: &RgbImage, line: u32) {
-    let mut prev = 0;
-    let mut preprev = 0;
+fn exec<'a>(res: PixelsMut<'a, Luma<u8>>, left: &RgbImage, right: &RgbImage, line: u32) {
     let mut cursor = 0i32;
-    let mut precursor = 0i32;
-    let mut preprecursor = 0i32;
 
     let window_size = 128u32;
 
-    for x in 0..res.width() {
+    for (x, res) in res.enumerate() {
         let mut closest = -1i32;
         let mut min_error = -1i32;
         let mut matched = 0;
 
-        let val = get_pixel_hue(left, x, line);
+        let _val = get_pixel_hue(left, x as _, line);
 
         for i in 1..window_size {
-            let dist = (cursor - i as i32).abs();
-            let tmp = match_pixels(left, right, x, line, i);
+            let _dist = (cursor - i as i32).abs();
+            let tmp = match_pixels(left, right, x as _, line as _, i as _);
             let tmp_smoothed = tmp; // + (dist) * (1.0 / diff);
 
             if tmp_smoothed < min_error || min_error == -1 {
@@ -94,13 +96,16 @@ fn exec(res: &mut GrayImage, left: &RgbImage, right: &RgbImage, line: u32) {
             cursor = closest;
         }
 
-        res.put_pixel(x, line, ([get_pixel_color(left, cursor) as u8]).into());
-
-        preprecursor = precursor;
-        precursor = cursor;
-
-        preprev = prev;
-        prev = val;
+        *res = Luma([get_pixel_color(left, cursor) as u8]);
     }
 }
 
+pub fn compute(left: &RgbImage, right: &RgbImage) -> GrayImage {
+    let mut out = GrayImage::new(left.width(), right.height());
+
+    out.rows_mut()
+        .enumerate()
+        .for_each(|(y, row)| exec(row, left, right, y as _));
+
+    out
+}
